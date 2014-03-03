@@ -11,3 +11,7 @@
 *.lai
 *.la
 *.a
+
+# Added by me
+CMakeLists.txt.user
+*~
