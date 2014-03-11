@@ -1,29 +1,33 @@
+#include <ctime>
 #include <iostream>
+#include <string>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 
-using namespace boost::asio;
-typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
+using boost::asio::ip::tcp;
 
-void client_session(socket_ptr sock) {
-    while (true) {
-        char data[512];
-        size_t len = sock->read_some(buffer(data));
-        if (len > 0)
-            write(*sock, buffer("ok", 2));
-    }
+std::string make_datetime_string() {
+    using namespace std;    // time_t, time, ctime
+    time_t now = time(0);
+    return ctime(&now);
 }
 
 int main() {
-    io_service service;
-    ip::tcp::endpoint ep(ip::address::from_string("127.0.0.1"), 2001);
-    ip::tcp::acceptor acc(service, ep);
-    while (true) {
-        socket_ptr sock(new ip::tcp::socket(service));
-        acc.accept(*sock);
-        boost::thread(boost::bind(client_session, sock));
+    try {
+        boost::asio::io_service io_service;
+        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
+
+        for (;;) {
+            tcp::socket socket(io_service);
+            acceptor.accept(socket);
+
+            std::string message = make_datetime_string();
+            boost::system::error_code ignored_error;
+            boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
     }
 
     return 0;
 }
-
