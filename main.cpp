@@ -36,8 +36,8 @@ void client_session(socket_ptr socket) {
             std::string message = make_datetime_string();
 
             boost::asio::write(*socket, boost::asio::buffer(message), ignored_error);
-//            *socket->shutdown(tcp::socket::shutdown_receive, ignored_error);
-//            *socket->close(ignored_error);
+            *socket->shutdown(tcp::socket::shutdown_receive, ignored_error);
+            *socket->close(ignored_error);
         }
     }
 }
