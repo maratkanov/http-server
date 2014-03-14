@@ -16,28 +16,32 @@ std::string make_datetime_string() {
 
 typedef boost::shared_ptr<tcp::socket> socket_ptr;
 
-size_t read_complete(char * buf, const boost::system::error_code & err, size_t bytes) {
-    if (err) {
-        return 0;
-    }
-    bool found = std::find(buf, buf + bytes, '\n') < buf + bytes;
-    return found ? 0 : 1;
-}
+//size_t read_complete(char * buf, const boost::system::error_code & err, size_t bytes) {
+//    if (err) {
+//        return 0;
+//    }
+//    bool found = std::find(buf, buf + bytes, '\n') < buf + bytes;
+//    return found ? 0 : 1;
+//}
 
 void client_session(socket_ptr socket) {
     while (true) {
+        std::cout << "=== client while ===\n";
         char data[512];
         boost::system::error_code ignored_error;
 
         size_t len = socket->read_some(boost::asio::buffer(data), ignored_error);
+        if (ignored_error == boost::asio::error::eof)
+            break;
 //        size_t len = boost::asio::read(*socket, boost::asio::buffer(data), boost::bind(read_complete, data, _1, _2));
         if (len > 0) {
             std::cout << data;
             std::string message = make_datetime_string();
 
             boost::asio::write(*socket, boost::asio::buffer(message), ignored_error);
-            *socket->shutdown(tcp::socket::shutdown_receive, ignored_error);
+            *socket->shutdown(tcp::socket::shutdown_both, ignored_error);
             *socket->close(ignored_error);
+            break;
         }
     }
 }
@@ -56,7 +60,7 @@ int main() {
         tcp::acceptor acceptor(io_service, endpoint);
 
         while (true) {
-            std::cout << "main while\n";
+            std::cout << "===  main while  ===\n";
             socket_ptr sock(new tcp::socket(io_service));
             acceptor.accept(*sock);
             boost::thread(boost::bind(client_session, sock));
