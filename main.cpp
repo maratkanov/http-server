@@ -27,12 +27,13 @@ size_t read_complete(char * buf, const boost::system::error_code & err, size_t b
 void client_session(socket_ptr socket) {
     while (true) {
         char data[512];
-//        size_t len = socket->read_some(boost::asio::buffer(data));
-        size_t len = boost::asio::read(*socket, boost::asio::buffer(data), boost::bind(read_complete, data, _1, _2));
+        boost::system::error_code ignored_error;
+
+        size_t len = socket->read_some(boost::asio::buffer(data), ignored_error);
+//        size_t len = boost::asio::read(*socket, boost::asio::buffer(data), boost::bind(read_complete, data, _1, _2));
         if (len > 0) {
             std::cout << data;
             std::string message = make_datetime_string();
-            boost::system::error_code ignored_error;
 
             boost::asio::write(*socket, boost::asio::buffer(message), ignored_error);
 //            *socket->shutdown(tcp::socket::shutdown_receive, ignored_error);
@@ -42,21 +43,28 @@ void client_session(socket_ptr socket) {
 }
 
 int main() {
-    boost::asio::io_service io_service;
-    tcp::resolver resolver(io_service);
+    try {
+        boost::asio::io_service io_service;
+        tcp::resolver resolver(io_service);
 
-    std::string address = "0.0.0.0";
-    std::string port = "8080";
+        std::string address = "0.0.0.0";
+        std::string port = "8080";
 
-    tcp::resolver::query query(address, port);
-    tcp::endpoint endpoint = *resolver.resolve(query);
+        tcp::resolver::query query(address, port);
+        tcp::endpoint endpoint = *resolver.resolve(query);
 
-    tcp::acceptor acceptor(io_service, endpoint);
+        tcp::acceptor acceptor(io_service, endpoint);
 
-    while (true) {
-        socket_ptr sock(new tcp::socket(io_service));
-        acceptor.accept(*sock);
-        boost::thread(boost::bind(client_session, sock));
+        while (true) {
+            std::cout << "main while\n";
+            socket_ptr sock(new tcp::socket(io_service));
+            acceptor.accept(*sock);
+            boost::thread(boost::bind(client_session, sock));
+//            client_session(sock);
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
     }
 
     return 0;
