@@ -2,7 +2,9 @@
 #include <iostream>
 #include <string>
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <boost/shared_ptr.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -14,16 +16,27 @@ std::string make_datetime_string() {
 
 typedef boost::shared_ptr<tcp::socket> socket_ptr;
 
+size_t read_complete(char * buf, const boost::system::error_code & err, size_t bytes) {
+    if (err) {
+        return 0;
+    }
+    bool found = std::find(buf, buf + bytes, '\n') < buf + bytes;
+    return found ? 0 : 1;
+}
+
 void client_session(socket_ptr socket) {
     while (true) {
         char data[512];
-        size_t len = socket->read_some(boost::asio::buffer(data));
+//        size_t len = socket->read_some(boost::asio::buffer(data));
+        size_t len = boost::asio::read(*socket, boost::asio::buffer(data), boost::bind(read_complete, data, _1, _2));
         if (len > 0) {
             std::cout << data;
             std::string message = make_datetime_string();
             boost::system::error_code ignored_error;
 
             boost::asio::write(*socket, boost::asio::buffer(message), ignored_error);
+//            *socket->shutdown(tcp::socket::shutdown_receive, ignored_error);
+//            *socket->close(ignored_error);
         }
     }
 }
