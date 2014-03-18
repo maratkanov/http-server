@@ -22,14 +22,9 @@ public:
     /// Get the socket associated with the connection.
     boost::asio::ip::tcp::socket& socket();
 
-    /// Start the first asynchronous operation for the connection.
+    /// Start operations for the connection.
     void start();
 
-//    /// Stop all asynchronous operations associated with the connection.
-//    void stop();
-
-//    std::string make_datetime_string();
-//    void handle_client_session();
 private:
     /// Handle completion of a read operation.
     void handle_read(const boost::system::error_code& e,
@@ -47,6 +42,8 @@ private:
 
     /// Buffer for incoming data.
     boost::array<char, 8192> buffer_;
+
+    std::string make_datetime_string();
 
 //      /// The incoming request.
 //      request request_;

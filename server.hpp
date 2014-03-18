@@ -26,11 +26,8 @@ public:
 
 
 private:
-    /// function to return current daytime
-    std::string make_datetime_string();
-
-    /// function to handle ckient connections
-    void handle_client_session(socket_ptr socket);
+    /// function to handle client connections
+    void handle_client_session(connection_ptr connection_pointer);
 
     /// The io_service used to perform operations with sockets.
     boost::asio::io_service io_service_;
