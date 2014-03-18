@@ -8,10 +8,9 @@ namespace server {
 
 server::server(const std::string &address, const std::string &port, const std::string &doc_root) :
     io_service_(),
-    acceptor_(io_service_)/*,
-      connection_manager_(),
-      new_connection_(),
-      request_handler_(doc_root)*/
+    acceptor_(io_service_),
+    new_connection_(),
+    request_handler_(doc_root)
 {
     // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
     boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -26,9 +25,14 @@ server::server(const std::string &address, const std::string &port, const std::s
 void server::run() {
     while (true) {
         std::cout << "===  main while  ===\n";
-        socket_ptr sock(new tcp::socket(io_service_));
-        acceptor_.accept(*sock);
-        boost::thread(boost::bind(&server::handle_client_session, this, sock));
+
+        new_connection_.reset(new connection(io_service_, request_handler_));
+//        socket_ptr sock(new tcp::socket(io_service_));
+//        acceptor_.accept(*sock);
+        acceptor_.accept(new_connection_->socket());
+//        boost::thread(boost::bind(&server::handle_client_session, this, sock));
+//        boost::thread(boost::bind(&connection::start(), new_connection_);
+        new_connection_->start();
     }
 }
 

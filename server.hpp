@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include "connection.hpp"
 
 namespace http {
 namespace server {
@@ -37,14 +38,11 @@ private:
     /// Acceptor used to listen for incoming connections.
     boost::asio::ip::tcp::acceptor acceptor_;
 
-    //    /// The connection manager which owns all live connections.
-    //    connection_manager connection_manager_;
+    /// The next connection to be accepted.
+    connection_ptr new_connection_;
 
-    //    /// The next connection to be accepted.
-    //    connection_ptr new_connection_;
-
-    //    /// The handler for all incoming requests.
-    //    request_handler request_handler_;
+    /// The handler for all incoming requests.
+    request_handler request_handler_;
 };
 
 }
