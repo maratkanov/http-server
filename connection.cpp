@@ -18,25 +18,19 @@ boost::asio::ip::tcp::socket& connection::socket()
 }
 
 void connection::start() {
-    while (true) {
-        std::cout << "=== client while ===\n";
-        char data[512];
-        boost::system::error_code ignored_error;
+    boost::asio::streambuf b;
+    boost::asio::read_until(socket_, b, "\r\n\r\n");
 
-//        size_t len = boost::asio::read(*socket, boost::asio::buffer(data), boost::asio::transfer_at_least(1), ignored_error);
-        size_t len = socket_.read_some(boost::asio::buffer(data), ignored_error);
-        if (ignored_error == boost::asio::error::eof)
-            break;
-        if (len > 0) {
-            std::cout << data;
-            std::string message = make_datetime_string();
-
-            boost::asio::write(socket_, boost::asio::buffer(message), ignored_error);
-            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_error);
-            socket_.close(ignored_error);
-            break;
-        }
+    std::istream is(&b);
+    std::string s;
+    while (std::getline(is, s)) {
+        std::cout << s << std::endl;
     }
+
+    std::string message = make_datetime_string();
+    boost::system::error_code ignored_error;
+
+    boost::asio::write(socket_, boost::asio::buffer(message), ignored_error);
 }
 
 void connection::handle_read(const boost::system::error_code& e, std::size_t bytes_transferred) {
