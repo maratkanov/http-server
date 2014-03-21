@@ -10,7 +10,8 @@ find_package(Boost COMPONENTS thread system REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 aux_source_directory(. SRC_LIST)
-add_executable(${PROJECT_NAME} ${SRC_LIST})
+set(HDR_LIST request.hpp header.hpp)
+add_executable(${PROJECT_NAME} ${SRC_LIST} ${HDR_LIST})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
 #get_cmake_property(_variableNames VARIABLES)

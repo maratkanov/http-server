@@ -2,9 +2,12 @@
 #include <vector>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <boost/logic/tribool.hpp>
 
 namespace http {
 namespace server {
+
+typedef boost::asio::buffers_iterator<boost::asio::streambuf::const_buffers_type> iterator;
 
 connection::connection(boost::asio::io_service& io_service, request_handler& handler)
   : socket_(io_service),
@@ -18,18 +21,27 @@ boost::asio::ip::tcp::socket& connection::socket()
 }
 
 void connection::start() {
-    boost::asio::streambuf b;
-    boost::asio::read_until(socket_, b, "\r\n\r\n");
+    boost::asio::streambuf request_buf;
+    std::ostringstream out;
 
-    std::istream is(&b);
-    std::string s;
-    while (std::getline(is, s)) {
-        std::cout << s << std::endl;
-    }
+    boost::asio::read_until(socket_, request_buf, "\r\n\r\n");
+    out << &request_buf;
+    std::string request_string = out.str();
+
+    boost::tribool result = request_parser_.parse(request_, request_string.begin(), request_string.end());
 
     std::string message = make_datetime_string();
-    boost::system::error_code ignored_error;
 
+    if (result) {
+        std::cout << "REQUEST OK\n";
+        request_.printState();
+    } else if (!result) {
+        std::cout << "BAD REQUEST\n";
+    }
+    else
+        std::cout << " SOME ERROR OCCURED DURING PARSING REQUEST\n";
+
+    boost::system::error_code ignored_error;
     boost::asio::write(socket_, boost::asio::buffer(message), ignored_error);
 }
 
