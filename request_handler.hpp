@@ -16,12 +16,15 @@ class request_handler :
 public:
     explicit request_handler(const std::string& doc_root);
     void handle_request(const request& req, reply& rep);
+
 private:
     std::string doc_root_;
 
     /// Perform URL-decoding on a string. Returns false if the encoding was
     /// invalid.
     static bool url_decode(const std::string& in, std::string& out);
+
+    std::string make_datetime_string();
 };
 
 }

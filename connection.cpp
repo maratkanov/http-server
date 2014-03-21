@@ -49,7 +49,10 @@ void connection::start() {
 
     boost::asio::write(socket_, reply_.to_buffers(), ignored_error);
 
-//    boost::asio::write(socket_, boost::asio::buffer(message), ignored_error);
+    socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_error);
+    socket_.close(ignored_error);
+    //TODO: here
+
 }
 
 void connection::handle_read(const boost::system::error_code& e, std::size_t bytes_transferred) {
@@ -58,11 +61,6 @@ void connection::handle_read(const boost::system::error_code& e, std::size_t byt
 void connection::handle_write(const boost::system::error_code &e) {
 }
 
-std::string connection::make_datetime_string() {
-    using namespace std;    // time_t, time, ctime
-    time_t now = time(0);
-    return ctime(&now);
-}
 
 }
 }

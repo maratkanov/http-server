@@ -4,7 +4,7 @@
 int main() {
     try {
         // Initialise the server.
-        http::server::server s("0.0.0.0", "8080", "/home/flexo/my_doc_root");
+        http::server::server s("0.0.0.0", "80", "/home/flexo/my_doc_root");
 
         // Run the server until stopped.
         s.run();

@@ -6,6 +6,8 @@
 #include <sstream>
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 
 namespace http {
 namespace server {
@@ -67,14 +69,27 @@ void request_handler::handle_request(const request &req, reply &rep)
 
     // Fill out the reply to be sent to the client.
     rep.status = reply::ok;
+
     char buf[512];
     while (is.read(buf, sizeof(buf)).gcount() > 0)
         rep.content.append(buf, is.gcount());
-    rep.headers.resize(2);
-    rep.headers[0].name = "Content-Length";
-    rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-    rep.headers[1].name = "Content-Type";
-    rep.headers[1].value = mime_types::extension_to_type(extension);
+
+    rep.headers.resize(5);
+
+    rep.headers[0].name = "Date";
+    rep.headers[0].value = make_datetime_string();
+    rep.headers[1].name = "Server";
+    rep.headers[1].value = "Alexei_SERVER";
+    rep.headers[2].name = "Content-Length";
+    rep.headers[2].value = boost::lexical_cast<std::string>(rep.content.size());
+    rep.headers[3].name = "Content-Type";
+    rep.headers[3].value = mime_types::extension_to_type(extension);
+    rep.headers[4].name = "Connection";
+    rep.headers[4].value = "close";
+
+    if (req.method == "HEAD") {
+        rep.content.erase();
+    }
 }
 
 bool request_handler::url_decode(const std::string& in, std::string& out)
@@ -114,6 +129,16 @@ bool request_handler::url_decode(const std::string& in, std::string& out)
         }
     }
     return true;
+}
+
+std::string request_handler::make_datetime_string() {
+//    using namespace std;    // time_t, time, ctime
+//    time_t now = time(0);
+//    return ctime(&now);
+
+    boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
+    return boost::posix_time::to_simple_string(now).c_str();
+//    return "dasdadadad";
 }
 
 }
