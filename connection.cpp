@@ -21,28 +21,35 @@ boost::asio::ip::tcp::socket& connection::socket()
 }
 
 void connection::start() {
-    boost::asio::streambuf request_buf;
-    std::ostringstream out;
 
+    boost::asio::streambuf request_buf;
     boost::asio::read_until(socket_, request_buf, "\r\n\r\n");
-    out << &request_buf;
-    std::string request_string = out.str();
+    buffer_ << &request_buf;
+    std::string request_string = buffer_.str();
 
     boost::tribool result = request_parser_.parse(request_, request_string.begin(), request_string.end());
 
-    std::string message = make_datetime_string();
+//    std::string message = make_datetime_string();
+    boost::system::error_code ignored_error;
 
     if (result) {
         std::cout << "REQUEST OK\n";
-        request_.printState();
+//        request_.printState();
+        request_handler_.handle_request(request_, reply_);
+
     } else if (!result) {
+        reply_ = reply::stock_reply(reply::bad_request);
         std::cout << "BAD REQUEST\n";
     }
-    else
+    else {
         std::cout << " SOME ERROR OCCURED DURING PARSING REQUEST\n";
+        reply_ = reply::stock_reply(reply::internal_server_error);
+        // TODO: add logging
+    }
 
-    boost::system::error_code ignored_error;
-    boost::asio::write(socket_, boost::asio::buffer(message), ignored_error);
+    boost::asio::write(socket_, reply_.to_buffers(), ignored_error);
+
+//    boost::asio::write(socket_, boost::asio::buffer(message), ignored_error);
 }
 
 void connection::handle_read(const boost::system::error_code& e, std::size_t bytes_transferred) {

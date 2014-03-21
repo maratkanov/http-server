@@ -8,6 +8,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include "request_handler.hpp"
 #include "request.hpp"
+#include "reply.hpp"
 #include "request_parser.hpp"
 
 namespace http {
@@ -43,7 +44,7 @@ private:
     request_handler& request_handler_;
 
     /// Buffer for incoming data.
-    boost::array<char, 8192> buffer_;
+    std::ostringstream buffer_;
 
     std::string make_datetime_string();
 
@@ -53,8 +54,8 @@ private:
     /// The parser for the incoming request.
     request_parser request_parser_;
 
-//    /// The reply to be sent back to the client.
-//    reply reply_;
+    /// The reply to be sent back to the client.
+    reply reply_;
 };
 
 typedef boost::shared_ptr<connection> connection_ptr;
