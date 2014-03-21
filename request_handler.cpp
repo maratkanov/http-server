@@ -35,6 +35,11 @@ void request_handler::handle_request(const request &req, reply &rep)
         return;
     }
 
+    if (req.method == "POST") {
+        rep = reply::stock_reply(reply::bad_request);
+        return;
+    }
+
     // If path ends in slash (i.e. is a directory) then add "index.html".
     if (request_path[request_path.size() - 1] == '/')
     {
