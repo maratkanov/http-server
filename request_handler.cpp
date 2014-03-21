@@ -39,17 +39,25 @@ void request_handler::handle_request(const request &req, reply &rep)
         request_path += "index.html";
     }
 
+    // GET parameters after ?
+    std::size_t first_question_pos = request_path.size();
+    if (request_path.find("?") != std::string::npos) {
+        first_question_pos = request_path.find_first_of("?");
+    }
+
     // Determine the file extension.
     std::size_t last_slash_pos = request_path.find_last_of("/");
     std::size_t last_dot_pos = request_path.find_last_of(".");
     std::string extension;
     if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
     {
-        extension = request_path.substr(last_dot_pos + 1);
+//        std::cout << last_dot_pos << " " << first_question_pos << std::endl;
+        extension = request_path.substr(last_dot_pos + 1, first_question_pos - last_dot_pos - 1);
     }
+//    std::cout << extension << std::endl;    // TODO: here
 
     // Open the file to send back.
-    std::string full_path = doc_root_ + request_path;
+    std::string full_path = doc_root_ + request_path.substr(0, first_question_pos);
     std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
     if (!is)
     {
