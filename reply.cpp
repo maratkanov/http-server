@@ -1,5 +1,7 @@
 #include "reply.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 
 namespace http {
 namespace server {
@@ -231,12 +233,23 @@ reply reply::stock_reply(reply::status_type status) {
     reply rep;
     rep.status = status;
     rep.content = stock_replies::to_string(status);
-    rep.headers.resize(2);
+    rep.headers.resize(5);
     rep.headers[0].name = "Content-Length";
     rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
     rep.headers[1].name = "Content-Type";
     rep.headers[1].value = "text/html";
+    rep.headers[2].name = "Date";
+    rep.headers[2].value = make_datetime_string();
+    rep.headers[3].name = "Server";
+    rep.headers[3].value = "Alexei_SERVER";
+    rep.headers[4].name = "Connection";
+    rep.headers[4].value = "close";
     return rep;
+}
+
+std::string reply::make_datetime_string() {
+    boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
+    return boost::posix_time::to_simple_string(now).c_str();
 }
 
 }

@@ -44,6 +44,8 @@ struct reply {
 
     /// Get a stock reply.
     static reply stock_reply(status_type status);
+
+    static std::string make_datetime_string();
 };
 
 }

@@ -58,10 +58,8 @@ void request_handler::handle_request(const request &req, reply &rep)
     std::string extension;
     if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
     {
-//        std::cout << last_dot_pos << " " << first_question_pos << std::endl;
         extension = request_path.substr(last_dot_pos + 1, first_question_pos - last_dot_pos - 1);
     }
-//    std::cout << extension << std::endl;    // TODO: here
 
     // Open the file to send back.
     std::string full_path = doc_root_ + request_path.substr(0, first_question_pos);
@@ -144,13 +142,8 @@ bool request_handler::url_decode(const std::string& in, std::string& out)
 }
 
 std::string request_handler::make_datetime_string() {
-//    using namespace std;    // time_t, time, ctime
-//    time_t now = time(0);
-//    return ctime(&now);
-
     boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
     return boost::posix_time::to_simple_string(now).c_str();
-//    return "dasdadadad";
 }
 
 }
