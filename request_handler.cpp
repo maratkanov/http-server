@@ -8,6 +8,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
+#include <boost/filesystem.hpp>
 
 namespace http {
 namespace server {
@@ -28,8 +29,7 @@ void request_handler::handle_request(const request &req, reply &rep)
     }
 
     // Request path must be absolute and not contain "..".
-    if (request_path.empty() || request_path[0] != '/'
-            || request_path.find("..") != std::string::npos)
+    if (request_path.empty() || request_path[0] != '/')
     {
         rep = reply::stock_reply(reply::bad_request);
         return;
@@ -63,6 +63,22 @@ void request_handler::handle_request(const request &req, reply &rep)
 
     // Open the file to send back.
     std::string full_path = doc_root_ + request_path.substr(0, first_question_pos);
+//    std::cout << full_path << std::endl;
+
+    if (full_path.find("..") != std::string::npos) {
+        using namespace boost::filesystem;
+        path request_path_to_file(full_path);
+        path norm_request_path_to_file = request_path_to_file.normalize();
+
+        if (norm_request_path_to_file.string().find(doc_root_) == std::string::npos) {
+            rep = reply::stock_reply(reply::bad_request);
+            return;
+        }
+        else {
+            full_path = norm_request_path_to_file.string();
+        }
+    }
+
     std::cout << full_path << std::endl;    // TODO: here
     std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
     if (!is)
