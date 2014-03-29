@@ -1,3 +1,4 @@
+#include <iostream>
 #include "request_handler.hpp"
 #include "mime_types.hpp"
 #include "reply.hpp"
@@ -158,8 +159,17 @@ bool request_handler::url_decode(const std::string& in, std::string& out)
 }
 
 std::string request_handler::make_datetime_string() {
-    boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
-    return boost::posix_time::to_simple_string(now).c_str();
+    using namespace boost::posix_time;
+    using namespace std;
+
+    time_facet *facet = new time_facet("%a, %d %b %Y %H:%M:%S%F %z");
+
+    std::stringstream ss;
+    ss.imbue(std::locale(std::locale(), facet));
+
+    ptime now_ptime = boost::posix_time::second_clock::universal_time();
+    ss << now_ptime;
+    return ss.str() + " GMT";
 }
 
 }
